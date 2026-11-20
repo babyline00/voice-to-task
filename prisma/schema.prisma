@@ -1,0 +1,42 @@
+// Voice-to-Task Capture Tool — Prisma schema
+// SQLite is used as the local-first store. `contextTags` is stored as a
+// JSON-stringified string[] (SQLite has no native list type).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Task {
+  id             String   @id @default(cuid())
+  title          String
+  dueAt          DateTime?
+  recurrenceRule String?
+  priority       String   @default("medium")
+  project        String?
+  contextTags    String   @default("[]") // JSON-stringified string[]
+  source         String   @default("voice") // "voice" | "manual" | "import"
+  rawTranscript  String?
+  audioPath      String?
+  status         String   @default("active") // "active" | "done" | "archived"
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([project])
+  @@index([priority])
+  @@index([status])
+}
+
+model VoiceMemo {
+  id        String   @id @default(cuid())
+  audioPath String
+  transcript String?
+  durationSec Int    @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
